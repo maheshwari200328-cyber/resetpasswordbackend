@@ -8,6 +8,9 @@ app.use(express.json())
 app.get('/test',(req,res)=>{
     res.send('api working')
 });
+app.get("/", (req, res) => {
+  res.send("Backend is working!");
+});
 app.post('/api/resetpassword/test',(req,res)=>{
     res.json({message:"Routes Works"})
 })
