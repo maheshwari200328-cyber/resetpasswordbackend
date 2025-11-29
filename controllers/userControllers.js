@@ -10,7 +10,11 @@ const nodemailer = require('nodemailer')
 
 exports.register = async (req, res) => {
     try {
-        const hashed = await bcrypt.hash(req.body.password, 10);
+        const{password}=req.body;
+        if(!password){
+            return res.status(400).json({message:"password is requires"})
+        }
+        const hashed = await bcrypt.hash(password.trim(), 10);
         const user = new User({ ...req.body, password: hashed })
 
         await user.save();
@@ -22,17 +26,28 @@ exports.register = async (req, res) => {
     }
 }
 exports.login = async (req, res) => {
+    try{
+        const user = await User.findOne({ email: req.body.email })
+    if (!user) 
+        return res.status(404).json({ message: 'user not found' })
+    console.log("Email:", req.body.email);
+console.log("Password from request:", req.body.password);
+console.log("Password from DB:", user ? user.password : "No user found");
 
-    const user = await User.findOne({ email: req.body.email })
-    if (!user) {
-        res.status(200).json({ message: 'user not found' })
-    }
-    const valid = await bcrypt.compare(req.body.password, user.password)
-    if (!valid) {
-        res.status(200).json({ message: 'Invalid Password' })
-    }
+    const valid = await bcrypt.compare(req.body.password.trim(), user.password)
+    console.log("password valid:",valid)
+    if (!valid) 
+        return res.status(401).json({ message: 'Invalid Password' })
+    
     const token = jwt.sign({ id: user._id, email: user.email }, process.env.JWT);
-    res.status(200).json({ message: "Login Successfully", token })
+   return  res.status(200).json({ message: "Login Successfully", token })
+    }
+    catch(error){
+        console.error(error);
+        return res.status(500).json({error:"somthing went wrong"})
+    }
+
+    
 
 }
 exports.forgotPassword = async (req, res) => {
@@ -40,14 +55,14 @@ exports.forgotPassword = async (req, res) => {
         const { email } = req.body;
         const user = await User.findOne({ email });
         if (!user) {
-            res.status(404).json({ message: 'user not found' })
+            return res.status(404).json({ message: 'user not found' })
         }
         const token = crypto.randomBytes(8).toString("hex");
         user.resetToken = token
         user.tokenExpiry = Date.now() + 10 * 60 * 1000;
         await user.save();
         //reset link
-        const link = `${process.env.CLIENT_URL}/reset-password/${token}`
+        const link = `${process.env.CLIENT_URL}/resetpassword/${token}`
         //send email
         const transporter = nodemailer.createTransport({
             service: 'gmail',
@@ -66,10 +81,11 @@ exports.forgotPassword = async (req, res) => {
             html: `<p>Click here to reset your password:</p><a href="${link}">${link}</a>`
         })
 
-        res.json({ message: "Reset Link send your email successfully! " })
+   return      res.json({ message: "Reset Link send your email successfully! " })
     }
     catch (error) {
-        res.status(500).json({ error: error.message })
+        console.error(error)
+      return  res.status(500).json({ error: error.message })
 
     }
 }
