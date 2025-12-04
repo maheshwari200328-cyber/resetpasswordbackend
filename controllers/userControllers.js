@@ -3,7 +3,7 @@ const User = require('../models/userModel');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
-const nodemailer = require('nodemailer')
+//const nodemailer = require('nodemailer')
 const sendEmail = require("../utils/sendEmail");
 
 
@@ -88,8 +88,7 @@ exports.forgotPassword = async (req, res) => {
 };
 
 //reset password
-const User = require("../models/userModel");
-const bcrypt = require("bcryptjs");
+
 
 exports.resetPassword = async (req, res) => {
   try {
