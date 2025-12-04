@@ -11,21 +11,24 @@ const sendEmail = require("../utils/sendEmail");
 
 exports.register = async (req, res) => {
     try {
-        const{password}=req.body;
-        if(!password){
-            return res.status(400).json({message:"password is requires"})
+        const { password } = req.body;
+
+        if (!password || password.trim() === "") {
+            return res.status(400).json({ message: "Password is required" });
         }
+
         const hashed = await bcrypt.hash(password.trim(), 10);
-        const user = new User({ ...req.body, password: hashed })
+        const user = new User({ ...req.body, password: hashed });
 
         await user.save();
-        res.json({ message: 'Register Succussfully!' });
+        res.json({ message: 'Register Successfully!' });
     }
     catch (error) {
-        res.status(500).json({ err: error.message })
-
+        console.log(error);
+        res.status(500).json({ err: error.message });
     }
 }
+
 exports.login = async (req, res) => {
     try{
         const user = await User.findOne({ email: req.body.email })
