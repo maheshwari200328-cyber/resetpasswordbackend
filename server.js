@@ -6,7 +6,7 @@ require('dotenv').config()
 const app = express()
 
 app.use(cors({
-   origin: ["http://localhost:5173", process.env.CLIENT_URL],
+   origin: ["http://localhost:5173", process.env.CLIENT_URL,"https://your-app-name.netlify.app"],
    methods: ["GET", "POST", "PUT", "DELETE"],
    credentials: true
 }));
