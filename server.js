@@ -5,10 +5,22 @@ require('dotenv').config()
 
 const app = express()
 
+const allowedOrigins = [
+  "http://localhost:5173",
+  process.env.CLIENT_URL,
+  "https://your-app-name.netlify.app"
+];
+
 app.use(cors({
-   origin: ["http://localhost:5173", process.env.CLIENT_URL,"https://your-app-name.netlify.app"],
-   methods: ["GET", "POST", "PUT", "DELETE"],
-   credentials: true
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true); // Postman or server
+    if (allowedOrigins.indexOf(origin) === -1) {
+      return callback(new Error("CORS blocked this origin"), false);
+    }
+    return callback(null, true);
+  },
+  methods: ["GET","POST","PUT","DELETE"],
+  credentials: true
 }));
 
 app.use(express.json())
