@@ -59,6 +59,7 @@ console.log("Password from DB:", user ? user.password : "No user found");
 
 exports.forgotPassword = async (req, res) => {
   try {
+      console.log("Forgot route hit", req.body.email);
     const { email } = req.body;
     const user = await User.findOne({ email });
 
@@ -73,7 +74,7 @@ exports.forgotPassword = async (req, res) => {
     await user.save();
 
     // Reset link
-    const link = `${process.env.CLIENT_URL}/reset-password/${token}`;
+    const link = `${process.env.CLIENT_URL}/resetpassword/${token}`;
 
     // Send Email with Resend
     await sendEmail(
