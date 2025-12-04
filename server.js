@@ -11,17 +11,12 @@ const allowedOrigins = [
   "https://your-app-name.netlify.app"
 ];
 
+const cors = require('cors');
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true); // Postman or server
-    if (allowedOrigins.indexOf(origin) === -1) {
-      return callback(new Error("CORS blocked this origin"), false);
-    }
-    return callback(null, true);
-  },
-  methods: ["GET","POST","PUT","DELETE"],
+  origin: process.env.CLIENT_URL,
   credentials: true
 }));
+
 
 app.use(express.json())
 
