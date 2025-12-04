@@ -4,18 +4,25 @@ const mongoose = require('mongoose')
 require('dotenv').config()
 
 const app = express()
-
 const allowedOrigins = [
   "http://localhost:5173",
   process.env.CLIENT_URL,
-  "https://your-app-name.netlify.app"
+  "https://passwordresetnavi30.netlify.app"
 ];
 
-
 app.use(cors({
-  origin: process.env.CLIENT_URL,
+  origin: function(origin, callback) {
+    if (!origin) return callback(null, true); 
+    if (allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
   credentials: true
 }));
+
+
 
 
 app.use(express.json())
