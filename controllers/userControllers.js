@@ -4,6 +4,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer')
+const sendEmail = require("../utils/sendEmail");
 
 
 
@@ -50,72 +51,70 @@ console.log("Password from DB:", user ? user.password : "No user found");
     
 
 }
+
+
 exports.forgotPassword = async (req, res) => {
-    try {
-        const { email } = req.body;
-        const user = await User.findOne({ email });
-        if (!user) {
-            return res.status(404).json({ message: 'user not found' })
-        }
-        const token = crypto.randomBytes(8).toString("hex");
-        user.resetToken = token
-        user.tokenExpiry = Date.now() + 10 * 60 * 1000;
-        await user.save();
-        //reset link
-        const link = `${process.env.CLIENT_URL}/resetpassword/${token}`
-        //send email
-        const transporter = nodemailer.createTransport({
-            service: 'gmail',
-            auth: {
-                user: process.env.EMAIL_USER,
-                pass: process.env.EMAIL_PASS
-            },
-            tls:{
-                rejectUnauthorized:false
-            }
-        })
-        //send link
-        await transporter.sendMail({
-            to: user.email,
-            subject: "password Reset",
-            html: `<p>Click here to reset your password:</p><a href="${link}">${link}</a>`
-        })
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
 
-   return      res.json({ message: "Reset Link send your email successfully! " })
-    }
-    catch (error) {
-        console.error(error)
-      return  res.status(500).json({ error: error.message })
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
 
-    }
-}
+    // Create token
+    const token = crypto.randomBytes(20).toString("hex");
+
+    user.resetToken = token;
+    user.tokenExpiry = Date.now() + 10 * 60 * 1000; // 10 min
+    await user.save();
+
+    // Reset link
+    const link = `${process.env.CLIENT_URL}/reset-password/${token}`;
+
+    // Send Email with Resend
+    await sendEmail(
+      email,
+      "Password Reset Request",
+      `<p>Click the link to reset your password:</p>
+       <a href="${link}">${link}</a>`
+    );
+
+    res.json({ message: "Password reset email sent!" });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 //reset password
-exports.resetPassword=async(req,res)=>{
-    try{
-        const{token}=req.params;
-        const{password}=req.body;
-        if(!password){
-                        return res.status(400).json({message:"Password is required"})
-        }
-        const user=await User.findOne({
-            resetToken:token,
-            tokenExpiry:{$gt:Date.now()}
-        });
-      
-             if (!user) 
-                return res.status(400).json({ message: 'invalid or expired token' })
-        //update password
-        const hashed=await bcrypt.hash(password,10);
-        user.password=hashed;
-        user.resetToken=undefined;
-        user.tokenExpiry=undefined;
-        await user.save();
-        res.json({message:"Password updated Successfully!!!!"})
-    }
-    catch(error){
-        console.error(error)
-        res.status(500).json({error:"Somthing went Wrong"})
-    }
-}
+const User = require("../models/userModel");
+const bcrypt = require("bcryptjs");
 
+exports.resetPassword = async (req, res) => {
+  try {
+    const { token } = req.params;
+    const { password } = req.body;
+
+    const user = await User.findOne({
+      resetToken: token,
+      tokenExpiry: { $gt: Date.now() }
+    });
+
+    if (!user)
+      return res.status(400).json({ message: "Invalid or expired token" });
+
+    const hashed = await bcrypt.hash(password, 10);
+    user.password = hashed;
+    user.resetToken = undefined;
+    user.tokenExpiry = undefined;
+
+    await user.save();
+
+    res.json({ message: "Password updated successfully!" });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
