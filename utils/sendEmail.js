@@ -4,14 +4,16 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 async function sendEmail(to, subject, html) {
   try {
-    await resend.emails.send({
-      from: "Password Reset <onboarding@resend.dev>",
-      to,
-      subject,
-      html
+    const response = await resend.emails.send({
+      from: "maheshwari200328@gmail.com", // VERIFIED in resend.com
+      to: to,
+      subject: subject,
+      html: html,
     });
+
+    console.log("EMAIL SENT:", response);
   } catch (error) {
-    console.log("Email Error:", error);
+    console.log("EMAIL ERROR:", error);
   }
 }
 
