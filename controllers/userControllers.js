@@ -56,45 +56,39 @@ console.log("Password from DB:", user ? user.password : "No user found");
 
 }
 
-
 exports.forgotPassword = async (req, res) => {
   try {
-      console.log("Forgot route hit", req.body.email);
+    console.log("Forgot route hit", req.body.email);
+
     const { email } = req.body;
     const user = await User.findOne({ email });
 
     if (!user)
       return res.status(404).json({ message: "User not found" });
 
-    // Create token
     const token = crypto.randomBytes(20).toString("hex");
 
     user.resetToken = token;
-    user.tokenExpiry = Date.now() + 10 * 60 * 1000; // 10 min
+    user.tokenExpiry = Date.now() + 10 * 60 * 1000;
     await user.save();
 
-    // Reset link
     const link = `${process.env.CLIENT_URL}/resetpassword/${token}`;
 
-    // Send Email with Resend
     await sendEmail(
-
-
-
-      
       email,
-      "Password Reset Request",
-      `<p>Click the link to reset your password:</p>
-       <a href="${link}">${link}</a>`
+      "Password Reset",
+      `<p>Click below to reset your password:<br>
+      <a href="${link}">${link}</a></p>`
     );
 
     res.json({ message: "Password reset email sent!" });
 
   } catch (error) {
-    console.error("ForgotPassword Error:",error);
-    res.status(500).json({ message: "Server error",error:error.message });
+    console.error("ForgotPassword Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
+
 
 //reset password
 
