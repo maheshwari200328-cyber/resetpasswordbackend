@@ -78,6 +78,10 @@ exports.forgotPassword = async (req, res) => {
 
     // Send Email with Resend
     await sendEmail(
+
+
+
+      
       email,
       "Password Reset Request",
       `<p>Click the link to reset your password:</p>

@@ -11,18 +11,23 @@ const allowedOrigins = [
 ];
 
 app.use(cors({
-  origin: function(origin, callback) {
-    if (!origin) return callback(null, true); 
-    if (allowedOrigins.includes(origin)) {
-      callback(null, true);
+  origin: function (origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173",
+      process.env.CLIENT_URL,
+      "https://passwordresetnavi30.netlify.app",
+    ];
+
+    if (!origin) return callback(null, true); // Postman, server-to-server
+
+    if (allowedOrigins.some(o => origin.startsWith(o))) {
+      return callback(null, true);
     } else {
-      callback(new Error("Not allowed by CORS"));
+      return callback(new Error("Not allowed by CORS: " + origin));
     }
   },
-  credentials: true
+  credentials: true,
 }));
-
-
 
 
 app.use(express.json())
