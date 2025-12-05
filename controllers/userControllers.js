@@ -83,7 +83,8 @@ exports.forgotPassword = async (req, res) => {
       `<p>Hi ${user.name || "User"},</p>
        <p>You requested to reset your password. Click the link below:</p>
        <a href="${resetUrl}" target="_blank">${resetUrl}</a>
-       <p>This link will expire in 10 minutes.</p>`
+       <p>This link will expire in 10 minutes.</p>
+        <p>If you didn’t request this, ignore this email.</p>`
     );
 
     res.json({ message: "Password reset email sent!" });
